@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hospaki 2</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Zmienne kolorystyczne */
+        :root {
+            --bg-color: #050505;
+            --bg-secondary: #0a0a0a;
+            --text-main: #f5f5f5;
+            --text-muted: #a3a3a3;
+            --accent-color: #d10020; /* Głęboki, agresywny czerwony */
+            --accent-hover: #ff1a3c;
+        }
+
+        /* Reset i ustawienia bazowe */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            /* Subtelny gradient tła dla nadania głębi */
+            background-image: radial-gradient(circle at 50% 0%, #170305 0%, #050505 60%);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* System animacji pojawiania się (Scroll Reveal) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ----------------------------------
+           SEKCJA 1: TYTUŁ (HERO)
+        ----------------------------------- */
+        #hero {
+            height: 35vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid rgba(209, 0, 32, 0.15);
+            position: relative;
+        }
+        
+        #hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        #hero h1 {
+            font-size: 3.5rem;
+            letter-spacing: 6px;
+            color: var(--text-main);
+            text-shadow: 0 0 25px rgba(209, 0, 32, 0.4);
+            font-weight: 700;
+        }
+
+        #hero h1 span {
+            color: var(--accent-color);
+        }
+
+        /* ----------------------------------
+           SEKCJA 2: CO ZNAJDZIECIE W GRZE
+        ----------------------------------- */
+        #features {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 5rem;
+            color: var(--text-main);
+            letter-spacing: 2px;
+        }
+        
+        .section-title span {
+            color: var(--accent-color);
+        }
+
+        .feature-row {
+            display: flex;
+            align-items: center;
+            gap: 5rem;
+            margin-bottom: 8rem;
+        }
+
+        .feature-row.reverse {
+            flex-direction: row-reverse;
+        }
+
+        .feature-media, .feature-text {
+            flex: 1;
+        }
+
+        .feature-media video {
+            width: 100%;
+            border-radius: 4px;
+            background: #111;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 20px rgba(209, 0, 32, 0.15);
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+            display: block;
+            cursor: pointer; /* Wskazuje, że można kliknąć */
+        }
+
+        .feature-media:hover video {
+            transform: scale(1.03);
+            box-shadow: 0 20px 50px rgba(0,0,0,1), 0 0 35px rgba(209, 0, 32, 0.3);
+            border-color: rgba(209, 0, 32, 0.4);
+        }
+
+        .feature-text h3 {
+            font-size: 2.2rem;
+            margin-bottom: 1.2rem;
+            color: var(--text-main);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .feature-text h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+        
+        .feature-row:hover .feature-text h3::after {
+            width: 100%;
+        }
+
+        .feature-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* ----------------------------------
+           MODAL WIDEO (Powiększanie)
+        ----------------------------------- */
+        #video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        #video-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #video-modal.active #modal-content {
+            transform: scale(1);
+        }
+
+        #modal-video {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 0 50px rgba(209, 0, 32, 0.3);
+            border: 1px solid rgba(209, 0, 32, 0.4);
+            /* Brak atrybutu controls zapewnia brak linii czasu */
+        }
+
+        #close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            transition: color 0.3s;
+            font-family: sans-serif;
+            font-weight: bold;
+        }
+
+        #close-modal:hover {
+            color: var(--accent-color);
+        }
+
+        /* ----------------------------------
+           SEKCJA 3: TWÓRCY
+        ----------------------------------- */
+        #creators {
+            padding: 6rem 2rem;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid rgba(209, 0, 32, 0.15);
+            border-bottom: 1px solid rgba(209, 0, 32, 0.15);
+            position: relative;
+        }
+
+        .creators-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .creator-card {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            background: rgba(20, 20, 20, 0.6);
+            padding: 2.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .creator-card:hover {
+            transform: translateX(15px);
+            background: rgba(30, 30, 30, 0.8);
+        }
+
+        .creator-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(209, 0, 32, 0.2);
+            background-color: #222;
+        }
+
+        .creator-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .creator-info p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+
+        .creator-info a {
+            display: inline-flex;
+            align-items: center;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        .creator-info a:hover {
+            color: var(--accent-hover);
+            text-shadow: 0 0 10px rgba(255, 26, 60, 0.6);
+        }
+
+        /* ----------------------------------
+           SEKCJA 4: POBIERZ GRĘ
+        ----------------------------------- */
+        #download {
+            padding: 10rem 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: radial-gradient(circle at 50% 100%, #170305 0%, #050505 50%);
+        }
+
+        #download h2 {
+            font-size: 3.5rem;
+            margin-bottom: 3rem;
+            color: var(--text-main);
+        }
+
+        .btn-download {
+            display: inline-block;
+            background: transparent;
+            color: var(--text-main);
+            padding: 1.2rem 4rem;
+            font-size: 1.5rem;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            text-decoration: none;
+            border: 2px solid var(--accent-color);
+            border-radius: 2px;
+            letter-spacing: 3px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: 0 0 15px rgba(209, 0, 32, 0.2);
+        }
+
+        .btn-download::before {
+            content: '';
+            position: absolute;
+            top: 0; 
+            left: -100%; 
+            width: 100%; 
+            height: 100%;
+            background: var(--accent-color);
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-download:hover::before {
+            left: 0;
+        }
+
+        .btn-download:hover {
+            color: #fff;
+            box-shadow: 0 0 40px rgba(209, 0, 32, 0.7);
+            transform: translateY(-4px);
+        }
+
+        /* ----------------------------------
+           RESPONSYWNOŚĆ (Mobile)
+        ----------------------------------- */
+        @media (max-width: 900px) {
+            #hero h1 { font-size: 2.5rem; }
+            .section-title { font-size: 2.2rem; }
+            
+            .feature-row, .feature-row.reverse {
+                flex-direction: column;
+                text-align: center;
+                gap: 2.5rem;
+                margin-bottom: 5rem;
+            }
+
+            .feature-text h3::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .creator-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 2rem 1.5rem;
+                border-left: none;
+                border-top: 4px solid var(--accent-color);
+            }
+
+            .creator-card:hover {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="hero">
+        <div class="reveal">
+            <h1>The Hospaki <span>2</span></h1>
+        </div>
+    </header>
+
+    <section id="features">
+        <h2 class="section-title reveal">Co znajdziecie <span>w grze</span></h2>
+        
+        <div class="feature-row reveal">
+            <div class="feature-media">
+                <video src="1.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="feature-text">
+                <h3>Wybór postaci</h3>
+                <p>Wciel się w postać ognistą albo lodową. Graj jako Spoko lodziarz albo Szablozębny Imperator. W trakcie gry odblokowujesz nowe umiejętności, dynamicznie poszerzając zakres ataków dla każdej postaci. Wybierz odpowiednią postać do danej sytuacji.</p>
+            </div>
+        </div>
+
+        <div class="feature-row reverse reveal">
+            <div class="feature-media">
+                <video src="2.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="feature-text">
+                <h3>Stylowa walka</h3>
+                <p>Gra zawiera zaawansowany licznik stylu. Zabijaj potwory, łącząc umiejętności, aby stworzyć potężne combo oraz zdobyć jak najwyższą ocenę. Całą krwawą rzeź na ekranie umili mocna, nu metalowa muzyka w tle od zespołów takich jak System of a Down oraz Linkin Park.</p>
+            </div>
+        </div>
+
+        <div class="feature-row reveal">
+            <div class="feature-media">
+                <video src="3.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <div class="feature-text">
+                <h3>Portal 2D</h3>
+                <p>Odpocznij od ciągłej walki, grając w sekcje z zagadkami w środowisku 2D, mocno inspirowanym kultową serią gier Portal. A mówili, że Portal 3 nie wyjdzie...</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="creators">
+        <h2 class="section-title reveal"><span>Nasi</span> Twórcy</h2>
+        
+        <div class="creators-container">
+            <div class="creator-card reveal">
+                <img src="Grzesiu.png" alt="Grzesiu - Programista" class="creator-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzAiIGhlaWdodD0iMTMwIiBmaWxsPSIjMjIyIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+'">
+                <div class="creator-info">
+                    <h3>Grzesiu</h3>
+                    <p>Główny programista, wizjoner, filantrop, playboy i miliarder. To przeze mnie jest tyle bugów.</p>
+                </div>
+            </div>
+
+            <div class="creator-card reveal">
+                <img src="Kotu.png" alt="Kotu - Artysta" class="creator-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzAiIGhlaWdodD0iMTMwIiBmaWxsPSIjMjIyIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+'">
+                <div class="creator-info">
+                    <h3>Kotu</h3>
+                    <p>Artysta, z którego ręki powstała większość assetów do gry. Tła, animacje postaci, teren oraz efekty to jego dzieło. Zerknijcie na jego profil, aby go wesprzeć.</p>
+                    <a href="https://x.com/loberbutcher" target="_blank" rel="noopener noreferrer">Śledź na X (Twitter) &#8594;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="download">
+        <div class="reveal">
+            <h2>Gotowy na rzeź?</h2>
+            <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1" target="_blank" class="btn-download">Pobierz Grę</a>
+        </div>
+    </section>
+
+    <div id="video-modal">
+        <div id="modal-content">
+            <span id="close-modal">&times;</span>
+            <video id="modal-video" autoplay loop muted playsinline></video>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Skrypt od animacji (Scroll Reveal)
+            const reveals = document.querySelectorAll('.reveal');
+            const revealOptions = {
+                threshold: 0.15,
+                rootMargin: "0px 0px -50px 0px"
+            };
+
+            const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, revealOptions);
+
+            reveals.forEach(reveal => {
+                revealOnScroll.observe(reveal);
+            });
+            
+            setTimeout(() => {
+                document.querySelector('#hero .reveal').classList.add('active');
+            }, 100);
+
+            // Skrypt do obsługi modala z wideo
+            const videoModal = document.getElementById('video-modal');
+            const modalVideo = document.getElementById('modal-video');
+            const closeModal = document.getElementById('close-modal');
+            const featureVideos = document.querySelectorAll('.feature-media video');
+
+            // Otwieranie modala
+            featureVideos.forEach(video => {
+                video.addEventListener('click', () => {
+                    modalVideo.src = video.src; // Kopiuje źródło klikniętego wideo
+                    videoModal.classList.add('active');
+                });
+            });
+
+            // Zamykanie modala (krzyżyk)
+            closeModal.addEventListener('click', () => {
+                closeVideoModal();
+            });
+
+            // Zamykanie modala po kliknięciu w tło
+            videoModal.addEventListener('click', (e) => {
+                if (e.target === videoModal) {
+                    closeVideoModal();
+                }
+            });
+
+            function closeVideoModal() {
+                videoModal.classList.remove('active');
+                setTimeout(() => {
+                    modalVideo.src = ""; // Czyści źródło po animacji by przerwać odtwarzanie
+                }, 400); 
+            }
+        });
+    </script>
+</body>
+</html>
